@@ -158,6 +158,42 @@ FLATTEN UnsignedBigInteger UnsignedBigInteger::minus(const UnsignedBigInteger& o
     return result;
 }
 
+FLATTEN UnsignedBigInteger UnsignedBigInteger::bitwise_or(const UnsignedBigInteger& other) const
+{
+    UnsignedBigInteger result;
+
+    bitwise_or_without_allocation(*this, other, result);
+
+    return result;
+}
+
+FLATTEN UnsignedBigInteger UnsignedBigInteger::bitwise_and(const UnsignedBigInteger& other) const
+{
+    UnsignedBigInteger result;
+
+    bitwise_and_without_allocation(*this, other, result);
+
+    return result;
+}
+
+FLATTEN UnsignedBigInteger UnsignedBigInteger::bitwise_xor(const UnsignedBigInteger& other) const
+{
+    UnsignedBigInteger result;
+
+    bitwise_xor_without_allocation(*this, other, result);
+
+    return result;
+}
+
+FLATTEN UnsignedBigInteger UnsignedBigInteger::bitwise_not() const
+{
+    UnsignedBigInteger result;
+
+    bitwise_not_without_allocation(*this, result);
+
+    return result;
+}
+
 FLATTEN UnsignedBigInteger UnsignedBigInteger::shift_left(size_t num_bits) const
 {
     UnsignedBigInteger output;
@@ -338,6 +374,141 @@ void UnsignedBigInteger::subtract_without_allocation(
 
     // This assertion should not fail, because we verified that *this>=other at the beginning of the function
     ASSERT(borrow == 0);
+}
+
+/**
+ * Complexity: O(N) where N is the number of words in the shorter value
+ * Method:
+ * Apply <op> word-wise until words in the shorter value are used up
+ * then copy the rest of the words verbatim from the longer value.
+ */
+FLATTEN void UnsignedBigInteger::bitwise_or_without_allocation(
+    const UnsignedBigInteger& left,
+    const UnsignedBigInteger& right,
+    UnsignedBigInteger& output)
+{
+    // If either of the BigInts are invalid, the output is just the other one.
+    if (left.is_invalid()) {
+        output.set_to(right);
+        return;
+    }
+    if (right.is_invalid()) {
+        output.set_to(left);
+        return;
+    }
+
+    const UnsignedBigInteger *shorter, *longer;
+    if (left.length() < right.length()) {
+        shorter = &left;
+        longer = &right;
+    } else {
+        shorter = &right;
+        longer = &left;
+    }
+
+    output.m_words.resize_and_keep_capacity(longer->length());
+
+    size_t longer_offset = longer->length() - shorter->length();
+    for (size_t i = 0; i < shorter->length(); ++i)
+        output.m_words[i] = longer->words()[i] | shorter->words()[i];
+
+    __builtin_memcpy(output.m_words.data() + shorter->length(), longer->words().data() + shorter->length(), sizeof(u32) * longer_offset);
+}
+
+/**
+ * Complexity: O(N) where N is the number of words in the shorter value
+ * Method:
+ * Apply 'and' word-wise until words in the shorter value are used up
+ * and zero the rest.
+ */
+FLATTEN void UnsignedBigInteger::bitwise_and_without_allocation(
+    const UnsignedBigInteger& left,
+    const UnsignedBigInteger& right,
+    UnsignedBigInteger& output)
+{
+    // If either of the BigInts are invalid, the output is just the other one.
+    if (left.is_invalid()) {
+        output.set_to(right);
+        return;
+    }
+    if (right.is_invalid()) {
+        output.set_to(left);
+        return;
+    }
+
+    const UnsignedBigInteger *shorter, *longer;
+    if (left.length() < right.length()) {
+        shorter = &left;
+        longer = &right;
+    } else {
+        shorter = &right;
+        longer = &left;
+    }
+
+    output.m_words.resize_and_keep_capacity(longer->length());
+
+    size_t longer_offset = longer->length() - shorter->length();
+    for (size_t i = 0; i < shorter->length(); ++i)
+        output.m_words[i] = longer->words()[i] & shorter->words()[i];
+
+    __builtin_memset(output.m_words.data() + shorter->length(), 0, sizeof(u32) * longer_offset);
+}
+
+/**
+ * Complexity: O(N) where N is the number of words in the shorter value
+ * Method:
+ * Apply 'xor' word-wise until words in the shorter value are used up
+ * and copy the rest.
+ */
+FLATTEN void UnsignedBigInteger::bitwise_xor_without_allocation(
+    const UnsignedBigInteger& left,
+    const UnsignedBigInteger& right,
+    UnsignedBigInteger& output)
+{
+    // If either of the BigInts are invalid, the output is just the other one.
+    if (left.is_invalid()) {
+        output.set_to(right);
+        return;
+    }
+    if (right.is_invalid()) {
+        output.set_to(left);
+        return;
+    }
+
+    const UnsignedBigInteger *shorter, *longer;
+    if (left.length() < right.length()) {
+        shorter = &left;
+        longer = &right;
+    } else {
+        shorter = &right;
+        longer = &left;
+    }
+
+    output.m_words.resize_and_keep_capacity(longer->length());
+
+    size_t longer_offset = longer->length() - shorter->length();
+    for (size_t i = 0; i < shorter->length(); ++i)
+        output.m_words[i] = longer->words()[i] ^ shorter->words()[i];
+
+    __builtin_memcpy(output.m_words.data() + shorter->length(), longer->words().data() + shorter->length(), sizeof(u32) * longer_offset);
+}
+
+/**
+ * Complexity: O(N) where N is the number of words
+ */
+FLATTEN void UnsignedBigInteger::bitwise_not_without_allocation(
+    const UnsignedBigInteger& right,
+    UnsignedBigInteger& output)
+{
+    // If the value is invalid, the output value is invalid as well.
+    if (right.is_invalid()) {
+        output.invalidate();
+        return;
+    }
+    output.m_words.resize_and_keep_capacity(right.length());
+
+    for (size_t i = 0; i < right.length(); ++i)
+        output.m_words[i] = ~right.words()[i];
 }
 
 /**
