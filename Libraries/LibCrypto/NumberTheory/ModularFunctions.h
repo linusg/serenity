@@ -171,12 +171,12 @@ static auto Power(const IntegerType& b, const IntegerType& e) -> IntegerType
     IntegerType base { b };
     IntegerType exp { 1 };
 
-    while (!(ep < 1)) {
+    while (!(ep < IntegerType { 1 })) {
         if (ep.words()[0] % 2 == 1)
             exp.set_to(exp.multiplied_by(base));
 
         // ep = ep / 2;
-        ep.set_to(ep.divided_by(2).quotient);
+        ep.set_to(ep.divided_by(IntegerType { 2 }).quotient);
 
         // base = base * base
         base.set_to(base.multiplied_by(base));
