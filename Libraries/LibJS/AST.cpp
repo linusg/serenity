@@ -29,10 +29,12 @@
 #include <AK/HashMap.h>
 #include <AK/ScopeGuard.h>
 #include <AK/StringBuilder.h>
+#include <LibCrypto/BigInt/SignedBigInteger.h>
 #include <LibJS/AST.h>
 #include <LibJS/Interpreter.h>
 #include <LibJS/Runtime/Accessor.h>
 #include <LibJS/Runtime/Array.h>
+#include <LibJS/Runtime/BigInt.h>
 #include <LibJS/Runtime/Error.h>
 #include <LibJS/Runtime/GlobalObject.h>
 #include <LibJS/Runtime/MarkedValueList.h>
@@ -636,6 +638,8 @@ Value UnaryExpression::execute(Interpreter& interpreter) const
             return js_string(interpreter, "boolean");
         case Value::Type::Symbol:
             return js_string(interpreter, "symbol");
+        case Value::Type::BigInt:
+            return js_string(interpreter, "bigint");
         default:
             ASSERT_NOT_REACHED();
         }
@@ -833,6 +837,12 @@ void NumericLiteral::dump(int indent) const
 {
     print_indent(indent);
     printf("NumericLiteral %g\n", m_value);
+}
+
+void BigIntLiteral::dump(int indent) const
+{
+    print_indent(indent);
+    printf("BigIntLiteral %s\n", m_value.characters());
 }
 
 void BooleanLiteral::dump(int indent) const
@@ -1419,6 +1429,11 @@ Value StringLiteral::execute(Interpreter& interpreter) const
 Value NumericLiteral::execute(Interpreter&) const
 {
     return Value(m_value);
+}
+
+Value BigIntLiteral::execute(Interpreter& interpreter) const
+{
+    return js_bigint(interpreter, Crypto::SignedBigInteger::from_base10(m_value.substring(0, m_value.length() - 1)));
 }
 
 Value BooleanLiteral::execute(Interpreter&) const
