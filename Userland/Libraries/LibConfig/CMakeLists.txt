@@ -1,5 +1,9 @@
 set(SOURCES
     Client.cpp
+    Language/AST.cpp
+    Language/Lexer.cpp
+    Language/Parser.cpp
+    Language/Token.cpp
     Listener.cpp
 )
 

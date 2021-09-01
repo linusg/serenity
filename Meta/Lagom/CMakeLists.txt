@@ -255,6 +255,12 @@ if (BUILD_LAGOM)
         LIBS LagomCrypto
     )
 
+    # Config
+    file(GLOB LIBCONFIG_LANGUAGE_SOURCES CONFIGURE_DEPENDS "../../Userland/Libraries/LibConfig/Language/*.cpp")
+    lagom_lib(Config config
+        SOURCES ${LIBCONFIG_LANGUAGE_SOURCES}
+    )
+
     # Crypto
     file(GLOB LIBCRYPTO_SOURCES CONFIGURE_DEPENDS "../../Userland/Libraries/LibCrypto/*.cpp")
     file(GLOB LIBCRYPTO_SUBDIR_SOURCES CONFIGURE_DEPENDS "../../Userland/Libraries/LibCrypto/*/*.cpp")
@@ -412,6 +418,10 @@ if (BUILD_LAGOM)
         add_executable(adjtime_lagom ../../Userland/Utilities/adjtime.cpp)
         set_target_properties(adjtime_lagom PROPERTIES OUTPUT_NAME adjtime)
         target_link_libraries(adjtime_lagom LagomCore)
+
+        add_executable(config-test_lagom ../../Userland/Utilities/config-test.cpp)
+        set_target_properties(config-test_lagom PROPERTIES OUTPUT_NAME config-test)
+        target_link_libraries(config-test_lagom LagomConfig LagomCore)
 
         add_executable(disasm_lagom ../../Userland/Utilities/disasm.cpp)
         set_target_properties(disasm_lagom PROPERTIES OUTPUT_NAME disasm)
