@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sin-ack <sin-ack@users.noreply.github.com>
+Date: Sun, 16 Jul 2023 17:34:51 +0300
+Subject: [PATCH] Extend support for SerenityOS target
+
+---
+ zig/lib/std/Target.zig               | 2 +-
+ zig/lib/std/zig/LibCInstallation.zig | 6 +++++-
+ zig/src/link/Elf.zig                 | 9 +++++++++
+ 3 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/zig/lib/std/Target.zig b/zig/lib/std/Target.zig
+index efe8ad48098a983c2da54b06a5c6af37a1e8b3f4..c74b9a500db7bfd8ce25b9c9a4f0a61ffe507ac1 100644
+--- a/zig/lib/std/Target.zig
++++ b/zig/lib/std/Target.zig
+@@ -2922,7 +2922,7 @@ pub fn is_libc_lib_name(target: std.Target, name: []const u8) bool {
+         return false;
+     }
+ 
+-    if (target.abi.isGnu() or target.abi.isMusl()) {
++    if (target.abi.isGnu() or target.abi.isMusl() or target.os.tag == .serenity) {
+         if (eqlIgnoreCase(ignore_case, name, "m"))
+             return true;
+         if (eqlIgnoreCase(ignore_case, name, "rt"))
+diff --git a/zig/lib/std/zig/LibCInstallation.zig b/zig/lib/std/zig/LibCInstallation.zig
+index 44cd029f60a17aab12a81f8f8e479645a877e4b1..ebc00ce25c18c6a75b2746ccac373db5e6b5bfee 100644
+--- a/zig/lib/std/zig/LibCInstallation.zig
++++ b/zig/lib/std/zig/LibCInstallation.zig
+@@ -198,6 +198,9 @@ pub fn findNative(args: FindNativeOptions) FindError!LibCInstallation {
+         try self.findNativeIncludeDirPosix(args);
+         try self.findNativeGccDirHaiku(args);
+         self.crt_dir = try args.allocator.dupeZ(u8, "/system/develop/lib");
++    } else if (is_serenity) {
++        try self.findNativeIncludeDirPosix(args);
++        self.crt_dir = try args.allocator.dupeZ(u8, "/usr/lib");
+     } else if (builtin.target.os.tag.isSolarish()) {
+         // There is only one libc, and its headers/libraries are always in the same spot.
+         self.include_dir = try args.allocator.dupeZ(u8, "/usr/include");
+@@ -308,7 +311,7 @@ fn findNativeIncludeDirPosix(self: *LibCInstallation, args: FindNativeOptions) F
+     const include_dir_example_file = if (is_haiku) "posix/stdlib.h" else "stdlib.h";
+     const sys_include_dir_example_file = if (is_windows)
+         "sys\\types.h"
+-    else if (is_haiku)
++    else if (is_haiku or is_serenity)
+         "errno.h"
+     else
+         "sys/errno.h";
+@@ -700,5 +703,6 @@ const Allocator = std.mem.Allocator;
+ const is_darwin = builtin.target.isDarwin();
+ const is_windows = builtin.target.os.tag == .windows;
+ const is_haiku = builtin.target.os.tag == .haiku;
++const is_serenity = builtin.target.os.tag == .serenity;
+ 
+ const log = std.log.scoped(.libc_installation);
+diff --git a/zig/src/link/Elf.zig b/zig/src/link/Elf.zig
+index 62bf6be63a71d7cf8a41d698e11935f1c836553b..8f50a157813d5fd7031fa0ff0dac2016c999ffd8 100644
+--- a/zig/src/link/Elf.zig
++++ b/zig/src/link/Elf.zig
+@@ -4587,6 +4587,15 @@ const CsuObjects = struct {
+                     .static_pie  => result.set( "rcrt0.o", null, "crtbegin.o",  "crtend.o",  null ),
+                     // zig fmt: on
+                 },
++                .serenity => switch (mode) {
++                    // zig fmt: off
++                    .dynamic_lib => result.set( "crt0_shared.o", "crti.o", null, null, "crtn.o" ),
++                    .dynamic_exe,
++                    .dynamic_pie,
++                    .static_exe,
++                    .static_pie  => result.set( "crt0.o",        "crti.o", null, null, "crtn.o" ),
++                    // zig fmt: on
++                },
+                 .haiku => switch (mode) {
+                     // zig fmt: off
+                     .dynamic_lib => result.set( null,          "crti.o", "crtbeginS.o", "crtendS.o", "crtn.o" ),
