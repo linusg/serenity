@@ -8,10 +8,10 @@ Subject: [PATCH] build: Adjust build process for SerenityOS
  1 file changed, 52 insertions(+), 1 deletion(-)
 
 diff --git a/build b/build
-index b1917f6bb18a587d9b5e98171c9f789d9a29aff6..e7d809893e46e247a579050ac61091a78c6b90a5 100755
+index 11ff43acfe280d1a44c20a6d46d01bf85418e137..387ab3eabe2e601b1ab7265b3b3a6064175d89af 100755
 --- a/build
 +++ b/build
-@@ -17,6 +17,7 @@ case $TARGET_OS_CMAKE in
+@@ -18,6 +18,7 @@ case $TARGET_OS_CMAKE in
    freebsd) TARGET_OS_CMAKE="FreeBSD";;
    windows) TARGET_OS_CMAKE="Windows";;
    linux) TARGET_OS_CMAKE="Linux";;
@@ -19,7 +19,7 @@ index b1917f6bb18a587d9b5e98171c9f789d9a29aff6..e7d809893e46e247a579050ac61091a7
    native) TARGET_OS_CMAKE="";;
  esac
  
-@@ -62,10 +63,58 @@ cmake "$ROOTDIR/zig" \
+@@ -63,10 +64,58 @@ cmake "$ROOTDIR/zig" \
    -DCMAKE_BUILD_TYPE=Release \
    -DZIG_VERSION="$ZIG_VERSION"
  cmake --build . --target install
@@ -78,7 +78,7 @@ index b1917f6bb18a587d9b5e98171c9f789d9a29aff6..e7d809893e46e247a579050ac61091a7
  # First cross compile zlib for the target, as we need the LLVM linked into
  # the final zig binary to have zlib support enabled.
  mkdir -p "$ROOTDIR/out/build-zlib-$TARGET-$MCPU"
-@@ -81,7 +130,8 @@ cmake "$ROOTDIR/zlib" \
+@@ -82,7 +131,8 @@ cmake "$ROOTDIR/zlib" \
    -DCMAKE_ASM_COMPILER="$ZIG;cc;-fno-sanitize=all;-s;-target;$TARGET;-mcpu=$MCPU" \
    -DCMAKE_RC_COMPILER="$ROOTDIR/out/host/bin/llvm-rc" \
    -DCMAKE_AR="$ROOTDIR/out/host/bin/llvm-ar" \
@@ -88,7 +88,7 @@ index b1917f6bb18a587d9b5e98171c9f789d9a29aff6..e7d809893e46e247a579050ac61091a7
  cmake --build . --target install
  
  # Same deal for zstd.
-@@ -144,6 +194,7 @@ cmake "$ROOTDIR/llvm" \
+@@ -145,6 +195,7 @@ cmake "$ROOTDIR/llvm" \
    -DCMAKE_RC_COMPILER="$ROOTDIR/out/host/bin/llvm-rc" \
    -DCMAKE_AR="$ROOTDIR/out/host/bin/llvm-ar" \
    -DCMAKE_RANLIB="$ROOTDIR/out/host/bin/llvm-ranlib" \

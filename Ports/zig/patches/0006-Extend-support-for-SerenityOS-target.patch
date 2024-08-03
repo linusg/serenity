@@ -1,0 +1,113 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: sin-ack <sin-ack@users.noreply.github.com>
+Date: Sun, 16 Jul 2023 17:34:51 +0300
+Subject: [PATCH] Extend support for SerenityOS target
+
+---
+ zig/lib/std/Target.zig               | 5 +++--
+ zig/lib/std/zig/LibCInstallation.zig | 6 +++++-
+ zig/src/link/Elf.zig                 | 9 +++++++++
+ zig/src/target.zig                   | 5 ++++-
+ 4 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/zig/lib/std/Target.zig b/zig/lib/std/Target.zig
+index 8d9f596072f245ea98e7bb0039d0c894910bebae..cc8afb7710783083e1395eaaff268f21ac695bdd 100644
+--- a/zig/lib/std/Target.zig
++++ b/zig/lib/std/Target.zig
+@@ -1783,12 +1783,13 @@ pub const DynamicLinker = struct {
+             .vulkan,
+             .other,
+             .plan9,
+-            .serenity,
+             => none,
+ 
+             // TODO revisit when multi-arch for Haiku is available
+             .haiku => init("/system/runtime_loader"),
+ 
++            .serenity => init("/usr/lib/Loader.so"),
++
+             // TODO go over each item in this list and either move it to the above list, or
+             // implement the standard dynamic linker path code for it.
+             .fuchsia,
+@@ -2560,7 +2561,7 @@ pub fn is_libc_lib_name(target: std.Target, name: []const u8) bool {
+         return false;
+     }
+ 
+-    if (target.abi.isGnu() or target.abi.isMusl()) {
++    if (target.abi.isGnu() or target.abi.isMusl() or target.os.tag == .serenity) {
+         if (eqlIgnoreCase(ignore_case, name, "m"))
+             return true;
+         if (eqlIgnoreCase(ignore_case, name, "rt"))
+diff --git a/zig/lib/std/zig/LibCInstallation.zig b/zig/lib/std/zig/LibCInstallation.zig
+index 686471bde58167f2ba6bae28cf555f179a7609ac..3a184340feb5712251cee74cc47b5035f78a2d5e 100644
+--- a/zig/lib/std/zig/LibCInstallation.zig
++++ b/zig/lib/std/zig/LibCInstallation.zig
+@@ -198,6 +198,9 @@ pub fn findNative(args: FindNativeOptions) FindError!LibCInstallation {
+         try self.findNativeIncludeDirPosix(args);
+         try self.findNativeGccDirHaiku(args);
+         self.crt_dir = try args.allocator.dupeZ(u8, "/system/develop/lib");
++    } else if (is_serenity) {
++        try self.findNativeIncludeDirPosix(args);
++        self.crt_dir = try args.allocator.dupeZ(u8, "/usr/lib");
+     } else if (builtin.target.os.tag.isSolarish()) {
+         // There is only one libc, and its headers/libraries are always in the same spot.
+         self.include_dir = try args.allocator.dupeZ(u8, "/usr/include");
+@@ -308,7 +311,7 @@ fn findNativeIncludeDirPosix(self: *LibCInstallation, args: FindNativeOptions) F
+     const include_dir_example_file = if (is_haiku) "posix/stdlib.h" else "stdlib.h";
+     const sys_include_dir_example_file = if (is_windows)
+         "sys\\types.h"
+-    else if (is_haiku)
++    else if (is_haiku or is_serenity)
+         "errno.h"
+     else
+         "sys/errno.h";
+@@ -700,5 +703,6 @@ const Allocator = std.mem.Allocator;
+ const is_darwin = builtin.target.isDarwin();
+ const is_windows = builtin.target.os.tag == .windows;
+ const is_haiku = builtin.target.os.tag == .haiku;
++const is_serenity = builtin.target.os.tag == .serenity;
+ 
+ const log = std.log.scoped(.libc_installation);
+diff --git a/zig/src/link/Elf.zig b/zig/src/link/Elf.zig
+index a8590c18d3c966d483cdc7b1686971376e24df77..c3d2d3ea284c173d36fd28f811be9f901b88d596 100644
+--- a/zig/src/link/Elf.zig
++++ b/zig/src/link/Elf.zig
+@@ -5052,6 +5052,15 @@ const CsuObjects = struct {
+                     .static_pie  => result.set( "rcrt0.o", null, "crtbegin.o",  "crtend.o",  null ),
+                     // zig fmt: on
+                 },
++                .serenity => switch (mode) {
++                    // zig fmt: off
++                    .dynamic_lib => result.set( "crt0_shared.o", "crti.o", null, null, "crtn.o" ),
++                    .dynamic_exe,
++                    .dynamic_pie,
++                    .static_exe,
++                    .static_pie  => result.set( "crt0.o",        "crti.o", null, null, "crtn.o" ),
++                    // zig fmt: on
++                },
+                 .haiku => switch (mode) {
+                     // zig fmt: off
+                     .dynamic_lib => result.set( null,          "crti.o", "crtbeginS.o", "crtendS.o", "crtn.o" ),
+diff --git a/zig/src/target.zig b/zig/src/target.zig
+index 768e4d957eb957fbc72df57f994b7715912e30ac..73137c6cdcf5f405170bb8bc0e1f4cdc5de0cae7 100644
+--- a/zig/src/target.zig
++++ b/zig/src/target.zig
+@@ -37,7 +37,7 @@ pub fn libcNeedsLibUnwind(target: std.Target) bool {
+ }
+ 
+ pub fn requiresPIE(target: std.Target) bool {
+-    return target.isAndroid() or target.isDarwin() or target.os.tag == .openbsd;
++    return target.isAndroid() or target.isDarwin() or target.os.tag == .openbsd or target.os.tag == .serenity;
+ }
+ 
+ /// This function returns whether non-pic code is completely invalid on the given target.
+@@ -293,6 +293,9 @@ pub fn libcFullLinkFlags(target: std.Target) []const []const u8 {
+             "-lc",
+             "-lnetwork",
+         },
++        .serenity => &[_][]const u8{
++            "-lc",
++        },
+         else => switch (target.abi) {
+             .android => &[_][]const u8{
+                 "-lm",

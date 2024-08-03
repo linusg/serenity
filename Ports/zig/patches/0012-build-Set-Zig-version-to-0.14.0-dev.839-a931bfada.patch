@@ -1,22 +1,22 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: sin-ack <sin-ack@users.noreply.github.com>
 Date: Mon, 17 Jul 2023 03:26:04 +0300
-Subject: [PATCH] build: Set Zig version to 0.12.0-dev.141+ddf5859c2
+Subject: [PATCH] build: Set Zig version to 0.14.0-dev.839+a931bfada
 
 ---
  build | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/build b/build
-index bf53f9ecca8fc15b9a80bd3c13b7c551f77979df..4b70377b43a35a1ba48ed50f1b29326798ab7c17 100755
+index 213fb3c25b745c71aa3c82e39354eef2f6a0f44f..1ece0529a61ed0a3b91cbc1ed9df020a5e429f25 100755
 --- a/build
 +++ b/build
-@@ -6,7 +6,7 @@ TARGET="$1" # Example: riscv64-linux-gnu
+@@ -7,7 +7,7 @@ TARGET="$1" # Example: riscv64-linux-gnu
  MCPU="$2" # Examples: `baseline`, `native`, `generic+v7a`, or `arm1176jzf_s`
  
  ROOTDIR="$(pwd)"
--ZIG_VERSION="0.11.0"
-+ZIG_VERSION="0.12.0-dev.141+ddf5859c2"
+-ZIG_VERSION="0.14.0-dev.418+ebd9efa85"
++ZIG_VERSION="0.14.0-dev.839+a931bfada"
  
  TARGET_OS_AND_ABI=${TARGET#*-} # Example: linux-gnu
  

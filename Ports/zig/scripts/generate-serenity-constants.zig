@@ -26,7 +26,7 @@ const constants = blk: {
     @setEvalBranchQuota(10000);
 
     var constant_list: []const []const u8 = &.{};
-    var constant_iterator = std.mem.tokenize(u8, constant_file, "\n");
+    var constant_iterator = std.mem.tokenizeScalar(u8, constant_file, '\n');
     while (constant_iterator.next()) |constant| {
         constant_list = constant_list ++ &[_][]const u8{constant};
     }

@@ -1,16 +1,16 @@
 #!/usr/bin/env -S bash ../.port_include.sh
 
 port='zig'
-version='0.12.0-dev.141+ddf5859c2'
+version='0.14.0-dev.839+a931bfada'
 files=(
-    'https://github.com/ziglang/zig-bootstrap/archive/34644ad5032c58e39327d33d7f96d63d7c330003.tar.gz#e502ae17b01f03c627927d60b2e26b5f7f83b0e8be27b6ef55511d52e5892ccf'
-    'https://github.com/ziglang/zig/archive/ddf5859c22527c6bf5d8bb13310db996fcc58874.tar.gz#9adaf787b6233cfbe784d2d8a72398784f3742e2f5ac700cbd59ba952f9491ad'
+    'https://github.com/ziglang/zig-bootstrap/archive/e3fe3904af3801454499e3a54c8f8a8c444d3a12.tar.gz#9b2f6b0a26316b4a52af682c34e11c83b4a1b84dbaf611251cedd7cccd713cf1'
+    'https://github.com/ziglang/zig/archive/a931bfada5e358ace980b2f8fbc50ce424ced526.tar.gz#37c166df5f7f2f5162daa7538fac9b87480d87eb8d54b74ffd6173463d5006fc'
 )
 
 # The actual directory to build in.
-workdir='zig-bootstrap-34644ad5032c58e39327d33d7f96d63d7c330003'
+workdir='zig-bootstrap-e3fe3904af3801454499e3a54c8f8a8c444d3a12'
 # The newer Zig directory we move into the workdir.
-zigdir='zig-ddf5859c22527c6bf5d8bb13310db996fcc58874'
+zigdir='zig-a931bfada5e358ace980b2f8fbc50ce424ced526'
 
 post_fetch() {
     # Move the newer version of Zig into the bootstrap
