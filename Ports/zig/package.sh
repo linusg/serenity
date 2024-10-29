@@ -15,7 +15,7 @@ zigdir='zig-4adf63aefc62efb301c27d9f6ec71f92f52c23ca'
 post_fetch() {
     # Move the newer version of Zig into the bootstrap
     run rm -rf zig
-    run mv "../${zigdir}" zig
+    run cp -r "../${zigdir}" zig
 
     # Copy the scripts that the build process will use
     run mkdir -p out

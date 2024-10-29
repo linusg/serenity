@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Linus Groh <mail@linusgroh.de>
+Date: Sat, 26 Oct 2024 22:16:14 +0100
+Subject: [PATCH] lol, lmao
+
+---
+ build | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build b/build
+index a6f4b4699fe9e1c26156f82fc82aa4ff9226aceb..9220bd6b540857554a8b6b4e72579b8cc6bbc277 100755
+--- a/build
++++ b/build
+@@ -205,6 +205,7 @@ cmake "$ROOTDIR/llvm" \
+   -DLLVM_ENABLE_BACKTRACES=OFF \
+   -DLLVM_ENABLE_BINDINGS=OFF \
+   -DLLVM_ENABLE_CRASH_OVERRIDES=OFF \
++  -DLLVM_ENABLE_LIBCXX=ON \
+   -DLLVM_ENABLE_LIBEDIT=OFF \
+   -DLLVM_ENABLE_LIBPFM=OFF \
+   -DLLVM_ENABLE_LIBXML2=OFF \

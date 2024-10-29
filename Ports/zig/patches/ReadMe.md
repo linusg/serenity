@@ -44,6 +44,7 @@ LibC, namely:
 This commit is an adaptation of the LLVM patch by Daniel Bertalan to fit
 the layout of the zig-bootstrap project.
 
+
 ## `0004-Extend-support-for-SerenityOS-target.patch`
 
 Extend support for SerenityOS target
@@ -79,5 +80,10 @@ them to look for the host libraries in the target libc locations.
 ## `0010-build-Set-Zig-version-to-0.14.0-dev.2050-4adf63aef.patch`
 
 build: Set Zig version to 0.14.0-dev.2050+4adf63aef
+
+
+## `0011-lol-lmao.patch`
+
+lol, lmao
 
 
