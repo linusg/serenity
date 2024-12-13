@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Linus Groh <mail@linusgroh.de>
+Date: Fri, 13 Dec 2024 19:22:08 +0000
+Subject: [PATCH] gctest: Set NTHREADS to 0
+
+It crashes otherwise:
+
+```
+0x000000078c79c017: [/usr/lib/libsystem.so] syscall1 +0x7 (syscall.cpp:20 => syscall.cpp:19)
+0x00000012967e283d: [/usr/lib/libc.so] pthread_mutex_lock.localalias +0x6d (serenity.h:43 => pthread_integration.cpp:158)
+0x0000000143bf0344: [/home/anon/gctest] GC_thread_is_registered +0x74 (pthread_support.c:911)
+0x0000000143bdb46f: [/home/anon/gctest] run_one_test +0x1f (gctest.c:1576)
+0x0000000143bd8e5d: [/home/anon/gctest] main +0x1ed (gctest.c:2731)
+0x0000000143bd9854: [/home/anon/gctest] _entry +0x24 (crt0.cpp:47)
+```
+---
+ tests/gctest.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/gctest.c b/tests/gctest.c
+index 2965407e25bf6d4db75ff8711635d02c771673c3..e6cc8d7375788cacf4ab78f38ca574c719a24b58 100644
+--- a/tests/gctest.c
++++ b/tests/gctest.c
+@@ -50,7 +50,7 @@
+ #ifndef NTHREADS
+ /* This excludes the main thread, which also runs a test.             */
+ /* In the single-threaded case, a number of times to rerun it.        */
+-#  define NTHREADS 5
++#  define NTHREADS 0
+ #endif
+ 
+ #if defined(_WIN32_WCE) && !defined(__GNUC__)
